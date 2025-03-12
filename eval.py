@@ -108,7 +108,7 @@ def extract_answer(answer: str, eos=None):
 
 
 def int_to_option(n: int):
-    return chr(n + 97)
+    return chr(n + 96)
 
 
 def preprocess_mathqa(example):
