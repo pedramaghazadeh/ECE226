@@ -14,6 +14,7 @@ from datasets import load_dataset
 from tqdm import tqdm
 
 NUMBER_SHOT = 8
+NUMBER_SAMPLES = 300
 
 # # Limit memory usage (e.g., 1 GB)
 # resource.setrlimit(resource.RLIMIT_AS, (1 * 1024**3, 1 * 1024**3))
@@ -165,7 +166,7 @@ def main(args):
     if "gsm8k" in args.eval:
         correct = 0
         train_data = list(load_dataset("gsm8k", "main", split="test[:20]"))
-        test_data = list(load_dataset("gsm8k", "main", split="test[20:300]"))
+        test_data = list(load_dataset("gsm8k", "main", split=f"test[20:{NUMBER_SAMPLES}]"))
 
         for i in tqdm(range((len(test_data)))):
             messages = nshot_chats(nshot_data=train_data, n=NUMBER_SHOT, question=test_data[i]['question'], task="gsm8k")
@@ -173,12 +174,12 @@ def main(args):
 
             if extract_answer(response) == extract_answer(test_data[i]['answer']):
                 correct += 1
-        print(f"Accuracy of {args.model}: {correct/len(test_data)}")
+        print(f"Accuracy of {args.model} on gsm8k: {correct/len(test_data)}")
         results["gsm8k"] = correct/len(test_data)
 
     if "mathqa" in args.eval:
         correct = 0
-        mathqa = load_dataset("math_qa", split="train[:300]")
+        mathqa = load_dataset("math_qa", split=f"train[:{NUMBER_SAMPLES}]")
         mathqa = mathqa.map(preprocess_mathqa)
         train_data = list(mathqa)[:20]
         test_data = list(mathqa)[20:]
@@ -188,7 +189,7 @@ def main(args):
             response = get_response(messages)
             if extract_answer(response) == extract_answer(test_data[i]['answer']):
                 correct += 1
-        print(f"Accuracy of {args.model}: {correct/len(test_data)}")
+        print(f"Accuracy of {args.model} on math-qa: {correct/len(test_data)}")
         results["mathqa"] = correct/len(test_data)
 
     if "mmlu" in args.eval:
@@ -204,19 +205,17 @@ def main(args):
         # 'econometrics', 
         # 'electrical_engineering', '
         # elementary_mathematics']
-        mmlu = load_dataset("cais/mmlu", "elementary_mathematics", split="test[:300]")
+        mmlu = load_dataset("cais/mmlu", "elementary_mathematics", split=f"test[:{NUMBER_SAMPLES}]")
         mmlu = mmlu.map(preprocess_mmlu)
         train_data = list(mmlu)[:20]
         test_data = list(mmlu)[20:]
 
         for i in tqdm(range(len(test_data))):
             messages = nshot_chats(nshot_data=train_data, n=NUMBER_SHOT, question=test_data[i]['question'], task="mmlu")
-            print(test_data[i])
             response = get_response(messages)
-            print(extract_answer(response), extract_answer(test_data[i]['ans']))
             if extract_answer(response) == extract_answer(test_data[i]['ans']):
                 correct += 1
-        print(f"Accuracy of {args.model}: {correct/len(test_data)}")
+        print(f"Accuracy of {args.model} on mmlu-elemantary-mathematics: {correct/len(test_data)}")
         results["mmlu"] = correct/len(test_data)
     
     # Writing the results as a json file with the timestamp
