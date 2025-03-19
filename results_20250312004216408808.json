@@ -1,0 +1,7 @@
+{
+    "Model": "meta-llama/Llama-3.2-1B-instruct",
+    "Device": "cpu",
+    "Quantized": false,
+    "Timestamp": "20250312004216408808",
+    "mmlu": 0.1
+}
